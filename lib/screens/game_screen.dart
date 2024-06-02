@@ -20,7 +20,6 @@ class _GameScreenState extends State<GameScreen> {
 
   List<Offset> selectedCells = [];
   Set<String> foundWords = {};
-  Set<Offset> highlightedCells = {};
   Offset? startDrag;
   Offset? endDrag;
 
@@ -119,7 +118,6 @@ class _GameScreenState extends State<GameScreen> {
       String selectedWord = _getSelectedWord();
       if (palavras.contains(selectedWord)) {
         foundWords.add(selectedWord);
-        highlightedCells.addAll(selectedCells);
         _showWordDialog(selectedWord);
       }
       selectedCells = [];
@@ -132,8 +130,8 @@ class _GameScreenState extends State<GameScreen> {
     if (startDrag == null || endDrag == null) return [];
 
     List<Offset> cells = [];
-    double cellWidth = 40; // Tamanho fixo da célula
-    double cellHeight = 40; // Tamanho fixo da célula
+    double cellWidth = MediaQuery.of(context).size.width / gridSize;
+    double cellHeight = MediaQuery.of(context).size.width / gridSize;
 
     int startX = (startDrag!.dx / cellWidth).floor();
     int startY = (startDrag!.dy / cellHeight).floor();
@@ -207,8 +205,9 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double cellWidth = 40; // Tamanho fixo da célula
-    double cellHeight = 40; // Tamanho fixo da célula
+    double cellWidth = MediaQuery.of(context).size.width / gridSize;
+    double cellHeight = MediaQuery.of(context).size.height /
+        (gridSize + 2); // Reservando espaço para outras UI
 
     return Scaffold(
       appBar: AppBar(
@@ -217,59 +216,49 @@ class _GameScreenState extends State<GameScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Center(
-              child: Container(
-                width: cellWidth * gridSize,
-                height: cellHeight * gridSize,
-                child: GestureDetector(
-                  onPanStart: _onPanStart,
-                  onPanUpdate: _onPanUpdate,
-                  onPanEnd: _onPanEnd,
-                  child: GridView.builder(
-                    physics: NeverScrollableScrollPhysics(), // Evita o scrolling
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: gridSize,
-                      childAspectRatio: 1.0,
-                    ),
-                    itemBuilder: (context, index) {
-                      int x = index % gridSize;
-                      int y = index ~/ gridSize;
-                      bool isSelected = selectedCells
-                          .contains(Offset(x.toDouble(), y.toDouble()));
-                      bool isHighlighted = highlightedCells
-                          .contains(Offset(x.toDouble(), y.toDouble()));
-
-                      return ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                              8.0), // Raio de 8.0 (ajuste conforme necessário)
-                          child: AnimatedContainer(
-                            duration: Duration(
-                                milliseconds:
-                                    200), // Duração da animação em milissegundos
-                            curve: Curves
-                                .easeInOut, // Ajuste a curva de animação conforme desejado
-                            margin: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                              color: isSelected || isHighlighted ? Colors.orange : Colors.blueAccent,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Center(
-                              child: Text(
-                                grid[y][x],
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.white,
-                                  fontWeight: isSelected || isHighlighted
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ),
-                          ));
-                    },
-                    itemCount: gridSize * gridSize,
-                  ),
+            child: GestureDetector(
+              onPanStart: _onPanStart,
+              onPanUpdate: _onPanUpdate,
+              onPanEnd: _onPanEnd,
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: gridSize,
                 ),
+                itemBuilder: (context, index) {
+                  int x = index % gridSize;
+                  int y = index ~/ gridSize;
+                  bool isSelected = selectedCells
+                      .contains(Offset(x.toDouble(), y.toDouble()));
+
+                  return ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                          8.0), // Raio de 8.0 (ajuste conforme necessário)
+                      child: AnimatedContainer(
+                        duration: Duration(
+                            milliseconds:
+                                200), // Duração da animação em milissegundos
+                        curve: Curves
+                            .easeInOut, // Ajuste a curva de animação conforme desejado
+                        margin: EdgeInsets.all(1.0),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.orange : Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: Center(
+                          child: Text(
+                            grid[y][x],
+                            style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.white,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ));
+                },
+                itemCount: gridSize * gridSize,
               ),
             ),
           ),
@@ -277,14 +266,8 @@ class _GameScreenState extends State<GameScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Wrap(
               spacing: 8.0,
-              children: foundWords.map((word) {
-                return GestureDetector(
-                  onTap: () => _showWordDialog(word),
-                  child: Chip(
-                    label: Text(word),
-                  ),
-                );
-              }).toList(),
+              children:
+                  foundWords.map((word) => Chip(label: Text(word))).toList(),
             ),
           ),
         ],
