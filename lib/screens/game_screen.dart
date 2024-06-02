@@ -20,6 +20,7 @@ class _GameScreenState extends State<GameScreen> {
 
   List<Offset> selectedCells = [];
   Set<String> foundWords = {};
+  Set<Offset> highlightedCells = {};
   Offset? startDrag;
   Offset? endDrag;
 
@@ -118,6 +119,7 @@ class _GameScreenState extends State<GameScreen> {
       String selectedWord = _getSelectedWord();
       if (palavras.contains(selectedWord)) {
         foundWords.add(selectedWord);
+        highlightedCells.addAll(selectedCells);
         _showWordDialog(selectedWord);
       }
       selectedCells = [];
@@ -234,6 +236,8 @@ class _GameScreenState extends State<GameScreen> {
                       int y = index ~/ gridSize;
                       bool isSelected = selectedCells
                           .contains(Offset(x.toDouble(), y.toDouble()));
+                      bool isHighlighted = highlightedCells
+                          .contains(Offset(x.toDouble(), y.toDouble()));
 
                       return ClipRRect(
                           borderRadius: BorderRadius.circular(
@@ -246,7 +250,7 @@ class _GameScreenState extends State<GameScreen> {
                                 .easeInOut, // Ajuste a curva de animação conforme desejado
                             margin: EdgeInsets.all(1.0),
                             decoration: BoxDecoration(
-                              color: isSelected ? Colors.orange : Colors.blueAccent,
+                              color: isSelected || isHighlighted ? Colors.orange : Colors.blueAccent,
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: Center(
@@ -255,7 +259,7 @@ class _GameScreenState extends State<GameScreen> {
                                 style: TextStyle(
                                   fontSize: 24,
                                   color: Colors.white,
-                                  fontWeight: isSelected
+                                  fontWeight: isSelected || isHighlighted
                                       ? FontWeight.bold
                                       : FontWeight.normal,
                                 ),
@@ -273,8 +277,14 @@ class _GameScreenState extends State<GameScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Wrap(
               spacing: 8.0,
-              children:
-                  foundWords.map((word) => Chip(label: Text(word))).toList(),
+              children: foundWords.map((word) {
+                return GestureDetector(
+                  onTap: () => _showWordDialog(word),
+                  child: Chip(
+                    label: Text(word),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ],
