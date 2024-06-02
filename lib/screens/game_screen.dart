@@ -10,7 +10,7 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final List<String> palavras = ['FLUTTER', 'DART', 'MOBILE', 'APP'];
-  final int gridSize = 10;
+  final int gridSize = 8;
   late List<List<String>> grid;
   Map<String, String> wordDescriptions = {
     'FLUTTER': 'Um SDK para desenvolvimento de aplicativos móveis.',
