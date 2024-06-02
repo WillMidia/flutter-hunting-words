@@ -1,5 +1,3 @@
-### README.md
-
 # Jogo de Caça-Palavras em flutter
 
 Um jogo de caça-palavras divertido e interativo desenvolvido com Flutter. Este jogo desafia os jogadores a encontrar palavras escondidas em uma grade de letras. O jogo é otimizado para dispositivos móveis, mas também funciona bem em telas maiores.
