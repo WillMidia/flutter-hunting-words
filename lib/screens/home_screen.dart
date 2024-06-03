@@ -105,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
                   SizedBox(height: 5),
                   Text(
-                   'RM - ALUNO\N RM - ALUNO\n RM - ALUNO',
+                    '96106 - Julia Menezes de Carvalho\n 93598 - Victor Henrique Fernandes\n 87429 - William Pereira Tedros',
                     style: TextStyle(
                       color: Colors.white,
                     ),
@@ -114,6 +114,7 @@ class _HomeScreenState extends State<HomeScreen>
                 ],
               ),
             ),
+            Image.asset("ocean20.png"),
           ],
         ),
       ),
