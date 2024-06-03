@@ -9,14 +9,15 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  final List<String> palavras = ['FLUTTER', 'DART', 'MOBILE', 'APP'];
+  final List<String> palavras = ['OCEANO', 'POLUIÇÃO', 'CLIMA', 'PESCA', 'ENERGIA'];
   final int gridSize = 8;
   late List<List<String>> grid;
   Map<String, String> wordDescriptions = {
-    'FLUTTER': 'Um SDK para desenvolvimento de aplicativos móveis.',
-    'DART': 'Uma linguagem de programação otimizada para aplicativos da web.',
-    'MOBILE': 'Relacionado a dispositivos móveis.',
-    'APP': 'Abreviação de aplicativo.',
+    'OCEANO': 'Grande corpo contínuo de água salgada que cobre a maior parte da superfície terrestre.',
+    'POLUIÇÃO': 'Contaminação do meio ambiente por substâncias nocivas ou resíduos, afetando negativamente os ecossistemas e a saúde humana.',
+    'CLIMA': 'Conjunto de condições atmosféricas de uma região ao longo do tempo, incluindo temperatura, precipitação e ventos.',
+    'PESCA': 'Atividade de capturar peixes e outros organismos aquáticos para alimentação, comércio ou recreação.',
+    'ENERGIA': 'Capacidade de realizar trabalho ou causar mudanças, disponível em várias formas, incluindo elétrica, térmica e renovável.'
   };
 
   List<Offset> selectedCells = [];
@@ -118,126 +119,126 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-void _onPanEnd(DragEndDetails details) {
-  setState(() {
-    String selectedWord = _getSelectedWord();
-    if (palavras.contains(selectedWord)) {
-      foundWords.add(selectedWord);
-      highlightedCells.addAll(selectedCells);
-      _showWordDialog(selectedWord);
-    }
-    selectedCells = [];
-    startDrag = null;
-    endDrag = null;
-  });
-}
-
-List<Offset> _calculateSelectedCells() {
-  if (startDrag == null || endDrag == null) return [];
-
-  List<Offset> cells = [];
-  double cellWidth = 40; // Tamanho fixo da célula
-  double cellHeight = 40; // Tamanho fixo da célula
-
-  int startX = (startDrag!.dx / cellWidth).floor();
-  int startY = (startDrag!.dy / cellHeight).floor();
-  int endX = (endDrag!.dx / cellWidth).floor();
-  int endY = (endDrag!.dy / cellHeight).floor();
-
-  int dx = endX - startX;
-  int dy = endY - startY;
-
-  // Determine a direção principal do movimento
-  bool isHorizontal = dx.abs() > dy.abs();
-  bool isVertical = dy.abs() > dx.abs();
-  bool isDiagonal = dx.abs() == dy.abs();
-
-  int steps;
-  if (isHorizontal) {
-    steps = dx.abs();
-  } else if (isVertical) {
-    steps = dy.abs();
-  } else {
-    steps = dx.abs(); // ou dy.abs(), já que ambos são iguais em uma diagonal
+  void _onPanEnd(DragEndDetails details) {
+    setState(() {
+      String selectedWord = _getSelectedWord();
+      if (palavras.contains(selectedWord)) {
+        foundWords.add(selectedWord);
+        highlightedCells.addAll(selectedCells);
+        _showWordDialog(selectedWord);
+      }
+      selectedCells = [];
+      startDrag = null;
+      endDrag = null;
+    });
   }
 
-  for (int i = 0; i <= steps; i++) {
-    int x, y;
+  List<Offset> _calculateSelectedCells() {
+    if (startDrag == null || endDrag == null) return [];
+
+    List<Offset> cells = [];
+    double cellWidth = 40; // Tamanho fixo da célula
+    double cellHeight = 40; // Tamanho fixo da célula
+
+    int startX = (startDrag!.dx / cellWidth).floor();
+    int startY = (startDrag!.dy / cellHeight).floor();
+    int endX = (endDrag!.dx / cellWidth).floor();
+    int endY = (endDrag!.dy / cellHeight).floor();
+
+    int dx = endX - startX;
+    int dy = endY - startY;
+
+    // Determine a direção principal do movimento
+    bool isHorizontal = dx.abs() > dy.abs();
+    bool isVertical = dy.abs() > dx.abs();
+    bool isDiagonal = dx.abs() == dy.abs();
+
+    int steps;
     if (isHorizontal) {
-      x = startX + dx.sign * i;
-      y = startY;
+      steps = dx.abs();
     } else if (isVertical) {
-      x = startX;
-      y = startY + dy.sign * i;
+      steps = dy.abs();
     } else {
-      x = startX + dx.sign * i;
-      y = startY + dy.sign * i;
+      steps = dx.abs(); // ou dy.abs(), já que ambos são iguais em uma diagonal
     }
-    cells.add(Offset(x.toDouble(), y.toDouble()));
+
+    for (int i = 0; i <= steps; i++) {
+      int x, y;
+      if (isHorizontal) {
+        x = startX + dx.sign * i;
+        y = startY;
+      } else if (isVertical) {
+        x = startX;
+        y = startY + dy.sign * i;
+      } else {
+        x = startX + dx.sign * i;
+        y = startY + dy.sign * i;
+      }
+      cells.add(Offset(x.toDouble(), y.toDouble()));
+    }
+
+    return cells;
   }
 
-  return cells;
-}
-
-String _getSelectedWord() {
-  String word = '';
-  for (var cell in selectedCells) {
-    int x = cell.dx.toInt();
-    int y = cell.dy.toInt();
-    word += grid[y][x];
+  String _getSelectedWord() {
+    String word = '';
+    for (var cell in selectedCells) {
+      int x = cell.dx.toInt();
+      int y = cell.dy.toInt();
+      word += grid[y][x];
+    }
+    return word;
   }
-  return word;
-}
 
-Future<void> _showWordDialog(String word) async {
-  final result = await showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Parabéns! Você encontrou: $word'),
-        content: Text(wordDescriptions[word]!),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              foundWords.add(word);
-              highlightedCells.addAll(selectedCells);
-              if (foundWords.length == palavras.length) {
-                Future.delayed(Duration.zero, () {
-                  _navigateToCongratulationsScreen();
-                });
-              }
-            },
-            child: Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
-}
+  Future<void> _showWordDialog(String word) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Parabéns! Você encontrou: $word'),
+          content: Text(wordDescriptions[word]!),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                foundWords.add(word);
+                highlightedCells.addAll(selectedCells);
+                if (foundWords.length == palavras.length) {
+                  Future.delayed(Duration.zero, () {
+                    _navigateToCongratulationsScreen();
+                  });
+                }
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
-void _navigateToCongratulationsScreen() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => CongratulationsScreen(
-        onPlayAgain: _resetGame,
+  void _navigateToCongratulationsScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CongratulationsScreen(
+          onPlayAgain: _resetGame,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-void _resetGame() {
-  setState(() {
-    grid = _generateGrid(gridSize, palavras);
-    foundWords.clear();
-    highlightedCells.clear();
-    selectedCells.clear();
-    startDrag = null;
-    endDrag = null;
-  });
-  Navigator.pop(context);
-}
+  void _resetGame() {
+    setState(() {
+      grid = _generateGrid(gridSize, palavras);
+      foundWords.clear();
+      highlightedCells.clear();
+      selectedCells.clear();
+      startDrag = null;
+      endDrag = null;
+    });
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -274,32 +275,29 @@ void _resetGame() {
                           .contains(Offset(x.toDouble(), y.toDouble()));
 
                       return ClipRRect(
-                          borderRadius: BorderRadius.circular(
-                              8.0), // Raio de 8.0 (ajuste conforme necessário)
-                          child: AnimatedContainer(
-                                                        duration: Duration(
-                                milliseconds:
-                                    200), // Duração da animação em milissegundos
-                            curve: Curves
-                                .easeInOut, // Ajuste a curva de animação conforme desejado
-                            margin: EdgeInsets.all(1.0),
-                            decoration: BoxDecoration(
-                              color: isSelected || isHighlighted ? Colors.orange : Colors.blueAccent,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Center(
-                              child: Text(
-                                grid[y][x],
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.white,
-                                  fontWeight: isSelected || isHighlighted
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
+                        borderRadius: BorderRadius.circular(8.0), // Raio de 8.0 (ajuste conforme necessário)
+                        child: AnimatedContainer(
+                          duration: Duration(milliseconds: 200), // Duração da animação em milissegundos
+                          curve: Curves.easeInOut, // Ajuste a curva de animação conforme desejado
+                          margin: EdgeInsets.all(1.0),
+                          decoration: BoxDecoration(
+                            color: isSelected || isHighlighted ? const Color.fromARGB(255, 255, 121, 68) : Color.fromARGB(255, 255, 255, 255),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Center(
+                            child: Text(
+                              grid[y][x],
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: isSelected || isHighlighted ? Colors.white : Colors.blueAccent,
+                                fontWeight: isSelected || isHighlighted
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
-                          ));
+                          ),
+                        ),
+                      );
                     },
                     itemCount: gridSize * gridSize,
                   ),
@@ -310,30 +308,34 @@ void _resetGame() {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Wrap(
-              spacing: 8.0,
-              children: palavras.map((word) {
-                bool isFound = foundWords.contains(word);
-                return GestureDetector(
-                  onTap: () {
-                    if (isFound) {
-                      _showWordDialog(word);
-                    }
-                  },
-                  child: Chip(
-                    label: Text(
-                      word,
-                      style: TextStyle(
-                        fontWeight: isFound ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    backgroundColor: isFound ? Colors.orange : null,
+                    spacing: 8.0,
+                    children: palavras.map((word) {
+                      bool isFound = foundWords.contains(word);
+                      return GestureDetector(
+                        onTap: () {
+                          if (isFound) {
+                            _showWordDialog(word);
+                          }
+                        },
+                        child: Chip(
+                          label: Text(
+                            word,
+                            style: TextStyle(
+                              fontWeight: isFound ? FontWeight.bold : FontWeight.normal,
+                              color: isFound ? Colors.white : Colors.black, // Ajuste aqui
+                            ),
+                          ),
+                          backgroundColor: isFound ? const Color.fromARGB(255, 255, 121, 68) : Colors.white, // Laranja para encontrada, branco para não encontrada
+                          shape: StadiumBorder(side: BorderSide(color: Colors.blueAccent)),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
+
           ),
         ],
       ),
+      backgroundColor: Colors.blueAccent,
     );
   }
 }
